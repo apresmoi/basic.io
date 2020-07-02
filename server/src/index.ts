@@ -7,6 +7,15 @@ const app = express();
 const http = new HttpServer(app);
 const io = socketio(http, { path: '/ws' });
 
+io.on('connect', (socket) => {
+  console.log(`player ${socket.id} connected`)
+
+  socket.on('disconnect', () => {
+    console.log(`player ${socket.id} disconnected`)
+  })
+});
+
+
 http.listen(8081, function () {
   console.log('started on port 8081');
   process.on("SIGINT", closeApp);
