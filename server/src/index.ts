@@ -15,7 +15,17 @@ interface Player {
   dy: number
 }
 
+interface Effect {
+  player: Player
+  x: number
+  y: number
+  vx: number
+  vy: number
+  life: number
+}
+
 const players: { [id: string]: Player } = {}
+let effects: Effect[] = []
 
 io.on('connect', (socket) => {
   console.log(`player ${socket.id} connected`)
@@ -39,6 +49,19 @@ io.on('connect', (socket) => {
     players[socket.id].dy = payload.y
   })
 
+  socket.on('request_shoot', (payload) => {
+    console.log('request_shoot')
+    const player = players[socket.id]
+    effects.push({
+      player,
+      x: player.x,
+      y: player.y,
+      vx: player.dx,
+      vy: player.dy,
+      life: 10,
+    })
+  })
+
   socket.on('disconnect', () => {
     console.log(`player ${socket.id} disconnected`)
     socket.broadcast.emit('player_leave', { id: socket.id })
@@ -51,8 +74,18 @@ setInterval(() => {
     if (player.dx !== 0) player.x += player.dx * 10
     if (player.dy !== 0) player.y += player.dy * 10
   })
+  effects = effects.reduce((r, effect) => {
+    effect.life--;
+    if (effect.life) {
+      effect.x += effect.vx * 20
+      effect.y += effect.vy * 20
+      r.push(effect)
+    }
+    return r
+  }, [])
   io.emit('update', {
-    players
+    players,
+    effects
   })
 }, 100)
 

@@ -10,10 +10,16 @@ interface Player {
   dy: number
 }
 
+interface Effect {
+  x: number
+  y: number
+}
+
 interface WorldState {
   self?: Player
   players: Player[]
   keys: string[]
+  effects: Effect[]
 }
 
 const Container = (props) => {
@@ -34,6 +40,13 @@ const Player = (props: Player) => {
   </g>
 }
 
+const Effect = (props: Effect) => {
+  const { x, y } = props;
+  return <g transform={`translate(${x}, ${y})`}>
+    <circle r={2} />
+  </g>
+}
+
 class World extends React.Component<{}, WorldState> {
   socket = io(socketURL, {
     path: `/ws`,
@@ -45,7 +58,8 @@ class World extends React.Component<{}, WorldState> {
     this.state = {
       self: null,
       players: [],
-      keys: []
+      keys: [],
+      effects: []
     }
 
     this.socket.on('login_success', (payload) => {
@@ -67,6 +81,7 @@ class World extends React.Component<{}, WorldState> {
       this.setState({
         self: payload.players[this.state.self.id],
         players: Object.values(payload.players).filter((p: Player) => p.id !== this.state.self.id) as Player[],
+        effects: payload.effects,
       })
     })
 
@@ -97,8 +112,12 @@ class World extends React.Component<{}, WorldState> {
   handleKeyDown = (e): void => {
     const { code } = e;
     const allowedKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
-    if (allowedKeys.includes(code) && !this.state.keys.includes(code))
+    if (allowedKeys.includes(code) && !this.state.keys.includes(code)) {
       this.setState({ keys: [...this.state.keys, code] }, this.directionChanged)
+    }
+    else if (code === 'Space') {
+      this.socket.emit('request_shoot', {})
+    }
   }
 
   handleKeyUp = (e): void => {
@@ -108,10 +127,11 @@ class World extends React.Component<{}, WorldState> {
   }
 
   render() {
-    const { self, players } = this.state
+    const { self, players, effects } = this.state
     return <Container>
       {self && <Player {...self} />}
       {players.map(player => <Player key={player.id} {...player} />)}
+      {effects.map((effect, i) => <Effect key={i} {...effect} />)}
     </Container>
   }
 }
