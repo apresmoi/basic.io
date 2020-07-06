@@ -34,6 +34,11 @@ io.on('connect', (socket) => {
   })
   socket.broadcast.emit('player_join', players[socket.id])
 
+  socket.on('request_direction_change', (payload) => {
+    players[socket.id].dx = payload.x
+    players[socket.id].dy = payload.y
+  })
+
   socket.on('disconnect', () => {
     console.log(`player ${socket.id} disconnected`)
     socket.broadcast.emit('player_leave', { id: socket.id })

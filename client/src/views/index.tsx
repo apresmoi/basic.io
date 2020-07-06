@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React from 'react'
 import io from 'socket.io-client';
 const socketURL = `http://localhost:8081/`;
 
@@ -13,6 +13,7 @@ interface Player {
 interface WorldState {
   self?: Player
   players: Player[]
+  keys: string[]
 }
 
 const Container = (props) => {
@@ -43,7 +44,8 @@ class World extends React.Component<{}, WorldState> {
     super({})
     this.state = {
       self: null,
-      players: []
+      players: [],
+      keys: []
     }
 
     this.socket.on('login_success', (payload) => {
@@ -62,6 +64,40 @@ class World extends React.Component<{}, WorldState> {
     })
 
     this.socket.connect()
+  }
+
+  componentDidMount(): void {
+    document.addEventListener('keydown', this.handleKeyDown);
+    document.addEventListener('keyup', this.handleKeyUp);
+  }
+
+  componentWillUnmount(): void {
+    document.removeEventListener('keydown', this.handleKeyDown);
+    document.removeEventListener('keyup', this.handleKeyUp);
+  }
+
+  directionChanged = () => {
+    const { keys, self } = this.state;
+    const direction = { x: 0, y: 0 }
+    if (keys.includes('ArrowUp')) direction.y = -1
+    if (keys.includes('ArrowDown')) direction.y = 1
+    if (keys.includes('ArrowRight')) direction.x = 1
+    if (keys.includes('ArrowLeft')) direction.x = -1
+
+    this.socket.emit('request_direction_change', direction)
+  }
+
+  handleKeyDown = (e): void => {
+    const { code } = e;
+    const allowedKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
+    if (allowedKeys.includes(code) && !this.state.keys.includes(code))
+      this.setState({ keys: [...this.state.keys, code] }, this.directionChanged)
+  }
+
+  handleKeyUp = (e): void => {
+    const { code } = e;
+    if (this.state.keys.includes(code))
+      this.setState({ keys: this.state.keys.filter(k => k !== code) }, this.directionChanged)
   }
 
   render() {
