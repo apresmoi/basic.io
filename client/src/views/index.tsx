@@ -12,6 +12,7 @@ interface Player {
 
 interface WorldState {
   self?: Player
+  players: Player[]
 }
 
 const Container = (props) => {
@@ -41,21 +42,33 @@ class World extends React.Component<{}, WorldState> {
   constructor() {
     super({})
     this.state = {
-      self: null
+      self: null,
+      players: []
     }
 
     this.socket.on('login_success', (payload) => {
       console.log('login_success', payload)
-      this.setState({ self: payload })
+      this.setState({ ...payload })
+    })
+
+    this.socket.on('player_join', (payload) => {
+      console.log('player_join', payload)
+      this.setState({ players: [...this.state.players, payload] })
+    })
+
+    this.socket.on('player_leave', (payload) => {
+      console.log('player_leave', payload)
+      this.setState({ players: this.state.players.filter(p => p.id !== payload.id) })
     })
 
     this.socket.connect()
   }
 
   render() {
-    const { self } = this.state
+    const { self, players } = this.state
     return <Container>
       {self && <Player {...self} />}
+      {players.map(player => <Player key={player.id} {...player} />)}
     </Container>
   }
 }

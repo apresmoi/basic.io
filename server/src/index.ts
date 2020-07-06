@@ -28,10 +28,15 @@ io.on('connect', (socket) => {
     dy: 0,
   }
 
-  socket.emit('login_success', players[socket.id])
+  socket.emit('login_success', {
+    self: players[socket.id],
+    players: Object.values(players).filter(p => p.id !== socket.id),
+  })
+  socket.broadcast.emit('player_join', players[socket.id])
 
   socket.on('disconnect', () => {
     console.log(`player ${socket.id} disconnected`)
+    socket.broadcast.emit('player_leave', { id: socket.id })
     delete players[socket.id]
   })
 });
