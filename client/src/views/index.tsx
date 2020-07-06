@@ -63,6 +63,13 @@ class World extends React.Component<{}, WorldState> {
       this.setState({ players: this.state.players.filter(p => p.id !== payload.id) })
     })
 
+    this.socket.on('update', (payload) => {
+      this.setState({
+        self: payload.players[this.state.self.id],
+        players: Object.values(payload.players).filter((p: Player) => p.id !== this.state.self.id) as Player[],
+      })
+    })
+
     this.socket.connect()
   }
 

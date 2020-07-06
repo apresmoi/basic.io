@@ -46,6 +46,16 @@ io.on('connect', (socket) => {
   })
 });
 
+setInterval(() => {
+  Object.values(players).forEach(player => {
+    if (player.dx !== 0) player.x += player.dx * 10
+    if (player.dy !== 0) player.y += player.dy * 10
+  })
+  io.emit('update', {
+    players
+  })
+}, 100)
+
 
 http.listen(8081, function () {
   console.log('started on port 8081');
