@@ -1,1 +1,1 @@
-export const routes = [{ name: 'Builder', route: '/' }];
+export const routes = [{ name: 'Index', route: '/' }];
