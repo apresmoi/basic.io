@@ -8,6 +8,12 @@ interface Player {
   y: number
   dx: number
   dy: number
+  dead: boolean
+}
+
+interface Effect {
+  x: number
+  y: number
 }
 
 interface Effect {
@@ -33,9 +39,9 @@ const Container = (props) => {
 }
 
 const Player = (props: Player) => {
-  const { x, y, id } = props
+  const { x, y, id, dead } = props
   return <g transform={`translate(${x}, ${y})`}>
-    <circle r={10} />
+    <circle r={10} fill={dead ? 'red' : 'black'} />
     <text textAnchor="middle" transform={`translate(0, 30)`}>{id}</text>
   </g>
 }

@@ -13,6 +13,16 @@ interface Player {
   y: number
   dx: number
   dy: number
+  dead: boolean
+}
+
+interface Effect {
+  player: Player
+  x: number
+  y: number
+  vx: number
+  vy: number
+  life: number
 }
 
 interface Effect {
@@ -36,6 +46,7 @@ io.on('connect', (socket) => {
     y: Math.random() * 500,
     dx: 0,
     dy: 0,
+    dead: false,
   }
 
   socket.emit('login_success', {
@@ -83,6 +94,25 @@ setInterval(() => {
     }
     return r
   }, [])
+
+  Object.values(players).forEach(player => {
+    const minX = player.x - 10
+    const maxX = player.x + 10
+    const minY = player.y - 10
+    const maxY = player.y + 10
+    if (effects.some(effect =>
+      effect.x >= minX
+      && effect.x <= maxX
+      && effect.y >= minY
+      && effect.y <= maxY
+      && player !== effect.player
+    )) {
+      player.dead = true;
+    }
+  })
+
+  // io.sockets.sockets[player]
+
   io.emit('update', {
     players,
     effects
