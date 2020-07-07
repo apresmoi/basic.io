@@ -5,6 +5,8 @@ Basic .io game example with SocketIO and ReactJS
 
 This is a basic .io game example to show the concept around it. I've used React for the UI since is the current library that I'm working on, this can be replaced with the lib/framework that you like.
 
+You can try a running example of this code on [this codesandbox](https://codesandbox.io/s/socketio-react-io-game-g53v1).
+
 <h2>How to run</h2>
 
 1. Do an **npm install** in both client/server folders.
